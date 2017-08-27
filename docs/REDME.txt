@@ -1,0 +1,18 @@
+# This file contains steps to run this application on Ubuntu system.
+
+1. Create virtualenv for this application using following command.
+	virtualenv <name-of-virtualenv> -p /usr/bin/python3.5
+
+2. Activate created virtualenv using following command.
+	source /path/to/<name-of-virtualenv>/bin/activate
+
+3. Install requirements of this project using follwing command.
+	pip install -r Regression/docs/requirements.txt
+
+4. Move to project root directory.
+	cd Regression/regression_functions/
+
+5. Run application using following command.
+	python manage.py runserver
+
+6. visit 127.0.0.1:8000 url in browser to access this application.

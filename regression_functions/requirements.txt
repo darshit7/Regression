@@ -1,0 +1,15 @@
+cycler==0.10.0
+dj-database-url==0.4.2
+Django==1.11.4
+django-js-reverse==0.7.3
+functools32==3.2.3.post2
+gunicorn==19.7.1
+matplotlib==2.0.2
+numpy==1.13.1
+pyparsing==2.2.0
+python-dateutil==2.6.1
+pytz==2017.2
+scipy==0.19.1
+six==1.10.0
+subprocess32==3.2.7
+whitenoise==3.3.0

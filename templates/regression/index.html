@@ -1,0 +1,113 @@
+{% load static %}
+<html>
+	<head>
+		<title> Linear Regression </title>
+			<link rel="stylesheet" href="{% static 'regression/css/bootstrap.css' %}">
+			<link rel="stylesheet" href="{% static 'regression/css/bootstrap-table.min.css' %}">
+			<style>
+				body {
+	    		font-family:"Helvetica Neue";
+	    		color: #686765;
+				}
+				.name {
+	    		float:right;
+	    		color:#27aae1;
+				}
+				.axis {
+	    		fill: none;
+	    		stroke: #AAA;
+	    		stroke-width: 1px;
+				}
+				text {
+	    		stroke: none;
+	    		fill: #666666;
+	    		font-size: .6em;
+	    		font-family:"Helvetica Neue"
+				}
+				.label {
+	    		fill: #414241;
+				}
+				.node {
+	    		cursor:pointer;
+				}
+				.dot {
+	    		opacity: .7;
+	    		cursor: pointer;
+				}	
+			</style>
+	</head>
+	<body>
+		<div id="outer-wrapper">
+			<div id="inner-wrapper">
+				<div id="page-canvas">
+					<div id="page-content">
+						<br/>
+						<form method="post" name="linear_regression">
+							{% csrf_token %}
+							<div class="col-md-12">
+								<label>Upper Limit</label>
+								<input type="number" id="upper_limit" name="upper_limit" min="0" />
+							</div>
+							<div class="col-md-12">
+								<label> Lower Limit </label>
+								<input type="number" id="lower_limit" name="lower_limit" min="0" />
+							</div>
+							<div class="row">
+							<div class=""></div>
+							<div class="col-md-3">
+								<table id="data_table" data-height="350" data-toggle="table">
+								<thead>
+									<tr>
+           					<th data-field="time">Time</th>
+           					<th data-field="potency">Potency</th>
+       						</tr>
+       					</thead>
+								</table>
+								<button id="calculate" type="button" value="Calculate">Calculate</button>
+							</div>
+							<div id="scatter-load" class="col-md-9">
+								<img id="chart" />
+							</div>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript" src="{% static 'regression/js/jquery-3.2.1.min.js' %}"></script>
+		<script type="text/javascript" src="{% static 'regression/js/bootstrap.min.js' %}"></script>
+		<script type="text/javascript" src="{% static 'regression/js/bootstrap-table.min.js' %}"></script>
+		<script>
+			var init_data = [
+												{"time": 0, "potency": 100},
+												{"time": 1, "potency": 99.2},
+												{"time": 2, "potency": 98.5},
+												{"time": 3, "potency": 99.1},
+												{"time": 6, "potency": 96.4},
+												{"time": 9, "potency": 95.2},
+												{"time": 12, "potency": 95.1},
+												{"time": 24, "potency": 94}
+											];
+			$("#data_table").bootstrapTable({
+				formatNoMatches: function () {
+        return '';
+      }});
+			$("#data_table").bootstrapTable('load', init_data);
+			$("#calculate").click(function(){
+        var tdata = JSON.stringify($("#data_table").bootstrapTable('getData'));
+				$.ajax({
+        	url: '{% url "calculate_linear_reg" %}',
+					type: 'post',
+        	data: {'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+									'upper_limit': $("#upper_limit").val(),
+									'lower_limit': $("#lower_limit").val(),
+									'table_data': tdata},
+        	success: function (data) {
+        		var jsonobj = $.parseJSON(data);
+        		$("#chart").attr('src', 'data:image/png;base64,'+jsonobj.data)
+        	}
+      	});
+			});
+		</script>
+	</body>
+</html>
