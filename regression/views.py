@@ -3,6 +3,8 @@ import base64
 from io import BytesIO
 
 from scipy import stats
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
