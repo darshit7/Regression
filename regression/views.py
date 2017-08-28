@@ -45,16 +45,22 @@ class LinerReg(View):
             - call generate_chart method
             - return HttpResponse with base64 converted chart.
         """
-        up_limit = lw_limit = None
-        if request.POST.get('upper_limit'):
-            up_limit = int(request.POST.get('upper_limit'))
-        if request.POST.get('lower_limit'):
-            lw_limit = int(request.POST.get('lower_limit'))
-        data = json.loads(request.POST.get('table_data'))
-        time = [d['time'] for d in data]
-        potency = [d['potency'] for d in data]
-        chart = self.generate_chart(up_limit, lw_limit, time, potency)
-        return HttpResponse(json.dumps({'data':chart}))
+        try:
+            up_limit = lw_limit = None
+            if request.POST.get('upper_limit'):
+                up_limit = int(request.POST.get('upper_limit'))
+            if request.POST.get('lower_limit'):
+                lw_limit = int(request.POST.get('lower_limit'))
+            data = json.loads(request.POST.get('table_data'))
+            time = [d['time'] for d in data]
+            time = np.array(time).astype(np.float)
+            potency = [d['potency'] for d in data]
+            potency = np.array(potency).astype(np.float)
+            chart = self.generate_chart(up_limit, lw_limit, time, potency)
+            return HttpResponse(json.dumps({'status':True, 'chart':chart}))
+        except Exception as inst:
+            print(inst)
+            return HttpResponse(json.dumps({'status':False, 'msg': str(inst)}))
 
     def generate_chart(self, up_limit, lw_limit, time, potency):
         """

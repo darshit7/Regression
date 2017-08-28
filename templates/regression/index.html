@@ -46,11 +46,22 @@
 							{% csrf_token %}
 							<div class="col-md-12">
 								<label>Upper Limit</label>
-								<input type="number" id="upper_limit" name="upper_limit" min="0" />
+								<input type="decimal" id="upper_limit" name="upper_limit" min="0" />
 							</div>
 							<div class="col-md-12">
 								<label> Lower Limit </label>
-								<input type="number" id="lower_limit" name="lower_limit" min="0" />
+								<input type="decimal" id="lower_limit" name="lower_limit" min="0" />
+							</div>
+							<div style="height:100px;"></div>
+							<div class="col-md-12">
+								<label> Time </label>
+								<input type="decimal" id="time" name="time" min="0" step=".01" />
+								<label> Potency </label>
+								<input type="decimal" id="potency" name="potency" min="0" step=".01" />
+								<button id="add" type="button" value="Add">Add</button>
+							</div>
+							<div class="col-md-12">
+								
 							</div>
 							<div class="row">
 							<div class=""></div>
@@ -63,6 +74,7 @@
        						</tr>
        					</thead>
 								</table>
+								<button id="clear" type="button" value="Calculate">Clear</button>
 								<button id="calculate" type="button" value="Calculate">Calculate</button>
 							</div>
 							<div id="scatter-load" class="col-md-9">
@@ -94,19 +106,39 @@
       }});
 			$("#data_table").bootstrapTable('load', init_data);
 			$("#calculate").click(function(){
-        var tdata = JSON.stringify($("#data_table").bootstrapTable('getData'));
-				$.ajax({
-        	url: '{% url "calculate_linear_reg" %}',
-					type: 'post',
-        	data: {'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
-									'upper_limit': $("#upper_limit").val(),
-									'lower_limit': $("#lower_limit").val(),
-									'table_data': tdata},
-        	success: function (data) {
-        		var jsonobj = $.parseJSON(data);
-        		$("#chart").attr('src', 'data:image/png;base64,'+jsonobj.data)
-        	}
-      	});
+				table_data = $("#data_table").bootstrapTable('getData')
+    	    	if(table_data.length > 0){
+    	    		$.ajax({
+	        			url: '{% url "calculate_linear_reg" %}',
+						type: 'post',
+	        			data: {'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+										'upper_limit': $("#upper_limit").val(),
+										'lower_limit': $("#lower_limit").val(),
+										'table_data': JSON.stringify(table_data)},
+	        			success: function (data) {
+	        				var jsonobj = $.parseJSON(data);
+	        				console.log(jsonobj);
+	        				if(jsonobj.status){
+	        					
+	        				    $("#chart").attr('src', 'data:image/png;base64,'+jsonobj.chart);
+	        				}
+	        				else{
+	        					alert("Error: "+ jsonobj.msg);
+	        				}
+	        				
+	        			}
+      				});	
+    	    	}
+    	    	else{
+    	    		alert("Please enter data.")
+    	    	}
+				
+			});
+			$("#clear").click(function(){
+				$("#data_table").bootstrapTable('removeAll');
+			});
+			$("#add").click(function(){
+				$("#data_table").bootstrapTable('append', {'time': $("#time").val(), 'potency':$("#potency").val()})
 			});
 		</script>
 	</body>
