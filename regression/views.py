@@ -56,13 +56,16 @@ class LinerReg(View):
             time = np.array(time).astype(np.float)
             potency = [d['potency'] for d in data]
             potency = np.array(potency).astype(np.float)
-            chart = self.generate_chart(up_limit, lw_limit, time, potency)
+            x_label = request.POST.get('time_unit')
+            y_label = request.POST.get('value_type')
+            chart = self.generate_chart(up_limit, lw_limit, time, potency,
+                x_label=x_label, y_label=y_label)
             return HttpResponse(json.dumps({'status':True, 'chart':chart}))
         except Exception as inst:
             print(inst)
             return HttpResponse(json.dumps({'status':False, 'msg': str(inst)}))
 
-    def generate_chart(self, up_limit, lw_limit, time, potency):
+    def generate_chart(self, up_limit, lw_limit, time, potency, **kwargs):
         """
         Type: Public.
 
@@ -86,6 +89,8 @@ class LinerReg(View):
         slope, intercept, r_value, p_value, std_err = stats.linregress(time, potency)
         fig=Figure()
         ax=fig.add_subplot(111)
+        ax.set_xlabel('Time (' + kwargs.get('x_label', '-') +')')
+        ax.set_ylabel(kwargs.get('y_label', ''))
         x = np.array(time, dtype=np.float64)
         ax.plot(x, slope*x + intercept, color='blue')
         if up_limit:

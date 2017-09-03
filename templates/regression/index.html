@@ -45,6 +45,21 @@
 						<form method="post" name="linear_regression">
 							{% csrf_token %}
 							<div class="col-md-12">
+								<label>Time Unit: </label>
+								<select id="time_unit" name="time_unit">
+								  <option value="Days"> Days </option>
+								  <option value="Week"> Week </option>
+								  <option value="Month"> Month </option>
+								</select>
+								<label>Value Type:</label>
+								<select id="value_type" name="value_type">
+								  <option value="Potency"> Potency </option>
+								  <option value="Related Componds"> Related Componds </option>
+								  <option value="Total Impurity"> Total Impurity </option>
+								  <option value="Other"> Other </option>
+								</select>
+							</div>
+							<div class="col-md-12">
 								<label>Upper Limit</label>
 								<input type="decimal" id="upper_limit" name="upper_limit" min="0" />
 							</div>
@@ -54,9 +69,9 @@
 							</div>
 							<div style="height:100px;"></div>
 							<div class="col-md-12">
-								<label> Time </label>
+								<label id="time_label"> Time </label>
 								<input type="decimal" id="time" name="time" min="0" step=".01" />
-								<label> Potency </label>
+								<label id="value_type_label"> Potency </label>
 								<input type="decimal" id="potency" name="potency" min="0" step=".01" />
 								<button id="add" type="button" value="Add">Add</button>
 							</div>
@@ -69,10 +84,10 @@
 								<table id="data_table" data-height="350" data-toggle="table">
 								<thead>
 									<tr>
-           					<th data-field="time">Time</th>
-           					<th data-field="potency">Potency</th>
-       						</tr>
-       					</thead>
+			           					<th data-field="time">Time</th>
+			           					<th data-field="potency">Potency</th>
+		       						</tr>
+       							</thead>
 								</table>
 								<button id="clear" type="button" value="Calculate">Clear</button>
 								<button id="calculate" type="button" value="Calculate">Calculate</button>
@@ -104,7 +119,6 @@
 				formatNoMatches: function () {
         return '';
       }});
-			$("#data_table").bootstrapTable('load', init_data);
 			$("#calculate").click(function(){
 				table_data = $("#data_table").bootstrapTable('getData')
     	    	if(table_data.length > 0){
@@ -112,9 +126,12 @@
 	        			url: '{% url "calculate_linear_reg" %}',
 						type: 'post',
 	        			data: {'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
-										'upper_limit': $("#upper_limit").val(),
-										'lower_limit': $("#lower_limit").val(),
-										'table_data': JSON.stringify(table_data)},
+	        				'upper_limit': $("#upper_limit").val(),
+	        				'lower_limit': $("#lower_limit").val(),
+	        				'table_data': JSON.stringify(table_data),
+	        				'time_unit': $("#time_unit").val(),
+	        				'value_type': $("#value_type").val()
+	        			},
 	        			success: function (data) {
 	        				var jsonobj = $.parseJSON(data);
 	        				console.log(jsonobj);
@@ -140,6 +157,19 @@
 			$("#add").click(function(){
 				$("#data_table").bootstrapTable('append', {'time': $("#time").val(), 'potency':$("#potency").val()})
 			});
+			$("#value_type").change(function(){
+				$("#value_type_label").text($(this).val());
+				$($("#data_table").find('th')[1]).find('.th-inner').text($(this).val());
+				$("#data_table").bootstrapTable('load', init_data);
+			});
+			$("#time_unit").change(function(){
+				t = 'Time ('+$(this).val()+')'
+				$("#time_label").text(t);
+				$($("#data_table").find('th')[0]).find('.th-inner').text(t);
+				$("#data_table").bootstrapTable('load', init_data);
+			});
+			$("#value_type").trigger('change');
+			$("#time_unit").trigger('change');
 		</script>
 	</body>
 </html>
