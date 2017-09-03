@@ -92,6 +92,7 @@ class LinerReg(View):
         ax.set_xlabel('Time (' + kwargs.get('x_label', '-') +')')
         ax.set_ylabel(kwargs.get('y_label', ''))
         x = np.array(time, dtype=np.float64)
+        #ax = self.extended(ax, x, np.array(potency, np.float64),  color="r", lw=2, label="extended")
         ax.plot(x, slope*x + intercept, color='blue')
         if up_limit:
             ax.plot(x, np.zeros(1)*x + np.array(up_limit, dtype=np.float64), color='red')
