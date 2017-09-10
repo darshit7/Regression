@@ -4,6 +4,7 @@
 		<title> Linear Regression </title>
 			<link rel="stylesheet" href="{% static 'regression/css/bootstrap.css' %}">
 			<link rel="stylesheet" href="{% static 'regression/css/bootstrap-table.min.css' %}">
+			<link rel="stylesheet" href="{% static 'regression/css/bootstrap-editable.css' %}">
 			<style>
 				body {
 	    		font-family:"Helvetica Neue";
@@ -83,8 +84,9 @@
 								<table id="data_table" data-height="350" data-toggle="table">
 								<thead>
 									<tr>
-			           					<th data-field="time">Time</th>
-			           					<th data-field="potency">Potency</th>
+			           					<th data-field="time" data-editable="true">Time</th>
+			           					<th data-field="potency" data-editable="true">Potency</th>
+			           					<th data-field="remove" data-formatter="removeFormatter">Remove</th>
 		       						</tr>
        							</thead>
 								</table>
@@ -103,6 +105,9 @@
 		<script type="text/javascript" src="{% static 'regression/js/jquery-3.2.1.min.js' %}"></script>
 		<script type="text/javascript" src="{% static 'regression/js/bootstrap.min.js' %}"></script>
 		<script type="text/javascript" src="{% static 'regression/js/bootstrap-table.min.js' %}"></script>
+		<script src="{% static 'regression/js/bootstrap-table-editable.js' %}"></script>
+		<script type="text/javascript" src="{% static 'regression/js/bootstrap-editable.min.js' %}"></script>
+		<!-- <script src="//rawgit.com/vitalets/x-editable/master/dist/bootstrap3-editable/js/bootstrap-editable.js"></script> -->
 		<script>
 			var init_data = [
 												{"time": 0, "potency": 100},
@@ -169,6 +174,15 @@
 			});
 			$("#value_type").trigger('change');
 			$("#time_unit").trigger('change');
+			$("#data_table").on("click-cell.bs.table", function (field, value, row, $el) {
+    			if (value =="remove"){
+    				console.log(row);
+      				$("#data_table").bootstrapTable('remove', {field: 'potency', values:[$el.potency]});
+    			}
+ 			});
+ 			function removeFormatter(value) {
+        		return '<div><i class="glyphicon glyphicon-remove"></i></div>';
+    		}
 		</script>
 	</body>
 </html>

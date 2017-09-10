@@ -15,19 +15,19 @@ from django.views import View
 from django.http import HttpResponse
 
 class IndexView(View):
-    def get(self, request):
-        """
-        Type: Public.
+	def get(self, request):
+		"""
+		Type: Public.
 
-        Arguments: HTTP request.
+		Arguments: HTTP request.
 
-        Return: HttpResponse to render index template.
+		Return: HttpResponse to render index template.
 
-        Raise: Nothing.
+		Raise: Nothing.
 
-        This method render index.html template
-        """
-        return render(request, 'regression/index.html')
+		This method render index.html template
+		"""
+		return render(request, 'regression/index.html')
 
 class LinerReg(View):
     def post(self, request):
@@ -48,9 +48,9 @@ class LinerReg(View):
         try:
             up_limit = lw_limit = None
             if request.POST.get('upper_limit'):
-                up_limit = int(request.POST.get('upper_limit'))
+                up_limit = float(request.POST.get('upper_limit'))
             if request.POST.get('lower_limit'):
-                lw_limit = int(request.POST.get('lower_limit'))
+                lw_limit = float(request.POST.get('lower_limit'))
             data = json.loads(request.POST.get('table_data'))
             time = [d['time'] for d in data]
             time = np.array(time).astype(np.float)
@@ -64,6 +64,7 @@ class LinerReg(View):
         except Exception as inst:
             print(inst)
             return HttpResponse(json.dumps({'status':False, 'msg': str(inst)}))
+        pass
 
     def generate_chart(self, up_limit, lw_limit, time, potency, **kwargs):
         """
@@ -92,8 +93,9 @@ class LinerReg(View):
         ax.set_xlabel('Time (' + kwargs.get('x_label', '-') +')')
         ax.set_ylabel(kwargs.get('y_label', ''))
         x = np.array(time, dtype=np.float64)
-        #ax = self.extended(ax, x, np.array(potency, np.float64),  color="r", lw=2, label="extended")
-        ax.plot(x, slope*x + intercept, color='blue')
+        y = np.array(potency, dtype=np.float64)
+        ax.plot(x, slope*x + intercept, color='blue', lw=5)
+        ax = self.extended(ax, x, y,  color='blue', label="extended")
         if up_limit:
             ax.plot(x, np.zeros(1)*x + np.array(up_limit, dtype=np.float64), color='red')
         if lw_limit:
@@ -103,3 +105,14 @@ class LinerReg(View):
         graphic = BytesIO()
         canvas.print_png(graphic)
         return base64.b64encode(graphic.getvalue()).decode("utf-8")
+
+    def extended(self, ax, x, y, **args):
+        xlim = ax.get_xlim()
+        ylim = ax.get_ylim()
+        x_ext = np.linspace(xlim[0], xlim[1], 100)
+        p = np.polyfit(x, y , deg=1)
+        y_ext = np.poly1d(p)(x_ext)
+        ax.plot(x_ext, y_ext, **args)
+        # ax.set_xlim(min(x))
+        # ax.set_ylim(min(y))
+        return ax
