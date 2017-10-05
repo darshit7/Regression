@@ -16,7 +16,7 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 
-from regression.views import IndexView, LinerReg
+from regression.views import IndexView, LinerReg, ArrheniusView
 
 urlpatterns = [
     url(r'^$', IndexView.as_view(), name="index"),
