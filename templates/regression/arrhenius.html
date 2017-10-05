@@ -1,0 +1,162 @@
+{% load static %}
+<html>
+	<head>
+		<title> Linear Regression </title>
+			<link rel="stylesheet" href="{% static 'regression/css/bootstrap.css' %}">
+			<link rel="stylesheet" href="{% static 'regression/css/bootstrap-table.min.css' %}">
+			<link rel="stylesheet" href="{% static 'regression/css/bootstrap-editable.css' %}">
+			<style>
+				body {
+	    		font-family:"Helvetica Neue";
+	    		color: #686765;
+				}
+				.name {
+	    		float:right;
+	    		color:#27aae1;
+				}
+				.axis {
+	    		fill: none;
+	    		stroke: #AAA;
+	    		stroke-width: 1px;
+				}
+				text {
+	    		stroke: none;
+	    		fill: #666666;
+	    		font-size: .6em;
+	    		font-family:"Helvetica Neue"
+				}
+				.label {
+	    		fill: #414241;
+				}
+				.node {
+	    		cursor:pointer;
+				}
+				.dot {
+	    		opacity: .7;
+	    		cursor: pointer;
+				}	
+			</style>
+	</head>
+	<body>
+		<div id="outer-wrapper">
+			<div id="inner-wrapper">
+				<div id="page-canvas">
+					<div id="page-content">
+						<br/>
+						<form method="post" name="linear_regression">
+							{% csrf_token %}
+							<div class="col-md-12">
+								<label id="time_label"> Time (days) </label>
+								<input type="decimal" id="time" name="time" min="0" step=".01" />
+								<label id="value_type_label"> Temprature(C) </label>
+								<input type="decimal" id="temp" name="temp" min="0" step=".01" />
+								<button id="add" type="button" value="Add">Add</button>
+							</div>
+							<div class="row">
+							<div class=""></div>
+							<div class="col-md-3">
+								<table id="data_table" data-height="350" data-toggle="table">
+								<thead>
+									<tr>
+			           					<th data-field="time" data-editable="true">Time</th>
+			           					<th data-field="temp" data-editable="true">Temprature</th>
+			           					<th data-field="remove" data-formatter="removeFormatter">Remove</th>
+		       						</tr>
+       							</thead>
+								</table>
+								<button id="clear" type="button" value="Calculate">Clear</button>
+								<button id="calculate" type="button" value="Calculate">Calculate</button>
+							</div>
+							
+							<div class="col-md-8">
+								<table id="result_table" data-height="350" data-toggle="table">
+								<thead>
+									<tr>
+			           					<th data-field="time">Time (days)</th>
+			           					<th data-field="lnt">lnt</th>
+										<th data-field="temp">Temprature(C)</th>
+										<th data-field="TK">T/K</th>
+										<th data-field="TK1000">1000K/T</th>
+										<th data-field="a">Activation Energy </th>
+										<th data-field="correlation">R</th>
+		       						</tr>
+       							</thead>
+								</table>
+							</div>
+							
+							<div id="scatter-load" class="col-md-9">
+								<img id="chart" />
+							</div>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript" src="{% static 'regression/js/jquery-3.2.1.min.js' %}"></script>
+		<script type="text/javascript" src="{% static 'regression/js/bootstrap.min.js' %}"></script>
+		<script type="text/javascript" src="{% static 'regression/js/bootstrap-table.min.js' %}"></script>
+		<script src="{% static 'regression/js/bootstrap-table-editable.js' %}"></script>
+		<script type="text/javascript" src="{% static 'regression/js/bootstrap-editable.min.js' %}"></script>
+		<!-- <script src="//rawgit.com/vitalets/x-editable/master/dist/bootstrap3-editable/js/bootstrap-editable.js"></script> -->
+		<script>
+		    $("#result_table").bootstrapTable({});
+			var init_data = [
+								{"time": 7, "temp": 5},
+								{"time": 30, "temp": -8},
+								{"time": 90, "temp": -12},
+								{"time": 360, "temp": -18}
+							];
+			$("#data_table").bootstrapTable({
+				formatNoMatches: function () {
+				return '';
+			}});
+			$("#data_table").bootstrapTable('load', init_data);
+			$("#calculate").click(function(){
+				table_data = $("#data_table").bootstrapTable('getData')
+    	    	if(table_data.length > 0){
+    	    		$.ajax({
+	        			url: '{% url "arrhenius" %}',
+						type: 'post',
+	        			data: {'csrfmiddlewaretoken': $('input[name="csrfmiddlewaretoken"]').val(),
+	        				'table_data': JSON.stringify(table_data),
+	        			},
+	        			success: function (data) {
+	        				var jsonobj = $.parseJSON(data);
+	        				console.log(jsonobj);
+	        				if(jsonobj.status){
+	        					
+	        				    $("#chart").attr('src', 'data:image/png;base64,'+jsonobj.chart);
+								$("#result_table").bootstrapTable('load', jsonobj.calculations);
+								$("#result_table").bootstrapTable('mergeCells', {'index':0, 'field':'a', 'rowspan':4});
+								$("#result_table").bootstrapTable('mergeCells', {'index':0, 'field':'correlation', 'rowspan':4});
+	        				}
+	        				else{
+	        					alert("Error: "+ jsonobj.msg);
+	        				}
+	        				
+	        			}
+      				});	
+    	    	}
+    	    	else{
+    	    		alert("Please enter data.")
+    	    	}
+				
+			});
+			$("#clear").click(function(){
+				$("#data_table").bootstrapTable('removeAll');
+			});
+			$("#add").click(function(){
+				$("#data_table").bootstrapTable('append', {'time': $("#time").val(), 'temp':$("#temp").val()})
+			});
+			$("#data_table").on("click-cell.bs.table", function (field, value, row, $el) {
+    			if (value =="remove"){
+      				$("#data_table").bootstrapTable('remove', {field: 'temp', values:[$el.temp]});
+    			}
+ 			});
+ 			function removeFormatter(value) {
+        		return '<div><i class="glyphicon glyphicon-remove"></i></div>';
+    		}
+		</script>
+	</body>
+</html>
