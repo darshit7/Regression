@@ -20,6 +20,7 @@ from regression.views import IndexView, LinerReg
 
 urlpatterns = [
     url(r'^$', IndexView.as_view(), name="index"),
+    url(r'arrhenius/$', ArrheniusView.as_view(), name="arrhenius"),
     url(r'^calculate_linear_reg/$', LinerReg.as_view(),
         name="calculate_linear_reg"),
     url(r'^admin/', admin.site.urls),
